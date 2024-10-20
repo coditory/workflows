@@ -26,7 +26,7 @@ on:
         required: false
 
 jobs:
-  release:
+  coditory-release:
     runs-on: ubuntu-latest
     steps:
       # - name: Dump GitHub context

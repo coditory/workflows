@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 jobs:
-  dependabot:
+  coditory-dependabot:
     runs-on: ubuntu-latest
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     permissions:

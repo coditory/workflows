@@ -11,7 +11,7 @@ on:
       - "docs/mkdocs-requirements.txt"
 
 jobs:
-  docs:
+  coditory-docs:
     runs-on: ubuntu-latest
     steps:
       # - name: Dump GitHub context
