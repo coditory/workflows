@@ -14,6 +14,10 @@ on:
       version:
         type: string
         required: false
+      snapshot:
+        type: boolean
+        required: false
+        default: false
       release-command:
         type: string
         required: true
