@@ -14,10 +14,10 @@ on:
       version:
         type: string
         required: false
-      publish-release-command:
+      release-command:
         type: string
         required: true
-      publish-snapshot-command:
+      snapshot-command:
         type: string
         required: false
 
@@ -113,11 +113,11 @@ jobs:
       - name: Publish Snapshot
         if: |
           inputs.snapshot == true
-          && inputs.publish-snapshot-command != ''
+          && inputs.snapshot-command != ''
         env:
           NEXT_VERSION: ${{ steps.version.outputs.next_version }}
         run: |
-          ${{ inputs.publish-snapshot-command }}
+          ${{ inputs.snapshot-command }}
           echo "### Published snapshot version $NEXT_VERSION 🚀" | tee -a $GITHUB_STEP_SUMMARY
 
       - name: Publish Release
@@ -126,7 +126,7 @@ jobs:
         env:
           NEXT_VERSION: ${{ steps.version.outputs.next_version }}
         run: |
-          ${{ inputs.publish-release-command }}
+          ${{ inputs.release-command }}
           echo "### Published release version $NEXT_VERSION 🚀" | tee -a $GITHUB_STEP_SUMMARY
 
       - name: Revert version commit on failure
