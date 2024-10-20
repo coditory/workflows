@@ -1,0 +1,43 @@
+name: Docs
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "docs/src/**"
+      - "docs/mkdocs.yml"
+      - "docs/mkdocs-requirements.txt"
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      # - name: Dump GitHub context
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJson(github) }}
+      #   run: echo "$GITHUB_CONTEXT"
+
+      - name: Setup bot token
+        uses: actions/create-github-app-token@v1
+        id: bot
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.bot.outputs.token }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+
+      - name: Install mkdocs
+        run: cd docs && pip install -r requirements.txt
+
+      - name: Deploy docs
+        run: cd docs && mkdocs gh-deploy --force

@@ -1,0 +1,105 @@
+# Used to release GH actions and workflows
+name: Release Action
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        required: false
+        default: 'main'
+      increment-version:
+        type: boolean
+        required: false
+        default: false
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to be used'
+        type: string
+        required: false
+        default: 'main'
+      increment-version:
+        description: 'Increment version or retag'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # - name: Dump GitHub context
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJson(github) }}
+      #   run: echo "$GITHUB_CONTEXT"
+
+      - name: Setup bot token
+        uses: actions/create-github-app-token@v1
+        id: bot
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
+      - name: Configure bot git account
+        id: get-user-id
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
+        run: |
+          declare -r USER_ID="$(gh api "/users/${{ steps.bot.outputs.app-slug }}[bot]" --jq .id)"
+          declare -r USER_EMAIL="$USER_ID+${{ steps.bot.outputs.app-slug }}[bot]@users.noreply.github.com"
+          declare -r USER_NAME="${{ steps.bot.outputs.app-slug }}[bot]"
+          git config --global user.name "$USER_NAME"
+          git config --global user.email "$USER_EMAIL"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: "refs/heads/${{ inputs.branch }}"
+          token: ${{ steps.bot.outputs.token }}
+          # Required to deduce version from git tags
+          fetch-depth: 0
+
+      - name: Version
+        id: version
+        run: |
+          declare -r GIT_VERSION="$(git tag -l 'v[0-9]*' --merged HEAD --sort=-v:refname | grep -E "^v[0-9]+$" | head -n 1 | cut -c2-)"
+          declare -r VERSION=${GIT_VERSION:-1}
+          declare -r NEXT_VERSION="$(( VERSION + 1 ))"
+          echo "version=$VERSION" | tee -a $GITHUB_OUTPUT
+          echo "next_version=$NEXT_VERSION" | tee -a $GITHUB_OUTPUT
+
+      - name: Update release tag
+        if: inputs.increment-version == false
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          declare -r TAG_NAME="v$VERSION"
+          git tag "$TAG_NAME" --force
+          git push origin tag "$TAG_NAME" --force
+
+      - name: Update version in files
+        if: inputs.increment-version == true
+        env:
+          PREV_VERSION: ${{ steps.version.outputs.version }}
+          NEXT_VERSION: ${{ steps.version.outputs.next_version }}
+        run: |
+          echo "Changing: $PREV_VERSION -> $NEXT_VERSION"
+          sed -i "s|${PREV_VERSION}|${NEXT_VERSION}|" README.md 2>/dev/null || true
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -a -m "Update version $PREV_VERSION -> $NEXT_VERSION" -m "[ci skip]"
+            git push
+          else
+            echo "Nothing changed. Skipping commit."
+          fi
+
+      - name: Create release tag
+        if: inputs.increment-version == true
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next_version }}
+        run: |
+          declare -r TAG_NAME="v$NEXT_VERSION"
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+
