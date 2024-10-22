@@ -147,7 +147,7 @@ jobs:
         uses: coditory/multi-setup-action@v1
         with:
           java-version: ${{ inputs.java-version }}
-          java-distriubtion: ${{ inputs.java-distribution }}
+          java-distribution: ${{ inputs.java-distribution }}
           go-version: ${{ inputs.go-version }}
           node-version: ${{ inputs.node-version }}
           python-version: ${{ inputs.python-version }}
