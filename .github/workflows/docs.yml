@@ -2,13 +2,12 @@ name: Docs
 
 on:
   workflow_call:
-  workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "docs/src/**"
-      - "docs/mkdocs.yml"
-      - "docs/mkdocs-requirements.txt"
+    inputs:
+      python-version:
+        description: 'Python version'
+        type: string
+        required: false
+        default: "3.x"
 
 jobs:
   coditory-docs:
@@ -34,7 +33,8 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: ${{ inputs.python-version }}
+          cache: pip
 
       - name: Install mkdocs
         run: cd docs && pip install -r requirements.txt

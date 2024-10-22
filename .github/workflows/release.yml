@@ -24,6 +24,36 @@ on:
       snapshot-command:
         type: string
         required: false
+      # Java
+      java-version:
+        description: 'Java version'
+        type: string
+        required: false
+      java-distribution:
+        description: 'Java distribution'
+        type: string
+        required: false
+        default: 'temurin'
+      # Go
+      go-version:
+        description: 'Go version'
+        type: string
+        required: false
+      # Node
+      node-version:
+        description: 'Go version'
+        type: string
+        required: false
+      # Python
+      python-version:
+        description: 'Python version'
+        type: string
+        required: false
+      # Rust
+      rust-toolchain:
+        description: 'Rust toolchain (e.g. nightly)'
+        type: string
+        required: false
 
 jobs:
   coditory-release:
@@ -42,7 +72,6 @@ jobs:
           private-key: ${{ secrets.BOT_PRIVATE_KEY }}
 
       - name: Configure bot git account
-        id: get-user-id
         env:
           GH_TOKEN: ${{ steps.bot.outputs.token }}
         run: |
@@ -113,6 +142,16 @@ jobs:
           else
             echo "Skipping committing updated version in config files for SNAPSHOT version."
           fi
+
+      - name: Setup environment
+        uses: coditory/multi-setup-action@v1
+        with:
+          java-version: ${{ inputs.java-version }}
+          java-distriubtion: ${{ inputs.java-distribution }}
+          go-version: ${{ inputs.go-version }}
+          node-version: ${{ inputs.node-version }}
+          python-version: ${{ inputs.python-version }}
+          rust-toolchain: ${{ inputs.rust-toolchain }}
 
       - name: Publish Snapshot
         if: |
@@ -212,4 +251,4 @@ jobs:
           body: ${{ steps.notes.outputs.notes }}
           draft: ${{ inputs.publish == 'SKIP' }}
           tag: v${{ steps.version.outputs.next_version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.bot.outputs.token }}
