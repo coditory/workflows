@@ -17,27 +17,28 @@ jobs:
       #     GITHUB_CONTEXT: ${{ toJson(github) }}
       #   run: echo "$GITHUB_CONTEXT"
 
-      - name: Setup bot token
-        uses: actions/create-github-app-token@v1
-        id: bot
-        with:
-          app-id: ${{ secrets.BOT_APP_ID }}
-          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
-
       - name: Dependabot metadata
         id: dependabot-metadata
         uses: dependabot/fetch-metadata@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Enable auto-merge for Dependabot PRs
-        run: gh pr merge --auto --rebase "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GITHUB_TOKEN: ${{ steps.bot.outputs.token }}
+      - name: Setup reviewer bot token
+        uses: actions/create-github-app-token@v1
+        id: bot
+        with:
+          app-id: ${{ secrets.REVIEWER_BOT_APP_ID }}
+          private-key: ${{ secrets.REVIEWER_BOT_PRIVATE_KEY }}
 
-      - name: Approve patch and minor updates
-        if: steps.dependabot-metadata.outputs.update-type != 'version-update:semver-major'
+      - name: Enable PR auto-merge
+        if: steps.pr.conclusion == 'success'
+        env:
+          PR_URL: ${{ steps.pr.outputs.url }}
+          GITHUB_TOKEN: ${{ steps.bot.outputs.token }}
+        run: gh pr merge --auto --rebase "$PR_URL"
+
+      - name: Approve PR
+        if: steps.pr.conclusion == 'success'
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ steps.bot.outputs.token }}
