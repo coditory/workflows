@@ -39,6 +39,7 @@ jobs:
             echo "Skipping auto-release. Since last release $LAST_RELEASE_TAG there were no new commits."
             echo ""
             echo "release=false" | tee -a $GITHUB_OUTPUT
+            exit 0
           fi
           declare -r DEPENDABOT="$(echo "$AUTHORS" \
             | grep -E ".*dependabot\[bot\]@users.noreply.github.com$")"
@@ -49,9 +50,10 @@ jobs:
             echo "$AUTHORS"
             echo ""
             echo "release=false" | tee -a $GITHUB_OUTPUT
+            exit 0
           fi
           declare -r NO_BOTS="$(echo "$AUTHORS" \
-            | grep -Ev ".*coditory\[bot\]@users.noreply.github.com$"
+            | grep -Ev ".*coditory\[bot\]@users.noreply.github.com$" \
             | grep -Ev ".*dependabot\[bot\]@users.noreply.github.com$")"
           if [ -n "$NO_BOTS" ]; then
             echo "Skipping auto-release. Since last release $LAST_RELEASE_TAG there were changes commited by non predefined bots."
@@ -60,9 +62,8 @@ jobs:
             echo "$AUTHORS"
             echo ""
             echo "release=false" | tee -a $GITHUB_OUTPUT
+            exit 0
           fi
-          else
-            echo "Triggering release. Since last release $LAST_RELEASE_TAG there were only commits authored by recognized bots."
-            echo ""
-            echo "release=true" | tee -a $GITHUB_OUTPUT
-          fi
+          echo "Triggering release. Since last release $LAST_RELEASE_TAG there were only commits authored by recognized bots."
+          echo ""
+          echo "release=true" | tee -a $GITHUB_OUTPUT
