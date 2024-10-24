@@ -36,7 +36,8 @@ jobs:
         run: |
           declare -r AUTHORS="$(git log $LAST_VERSION_TAG..HEAD --no-merges --oneline --format='%ae' 2>/dev/null | sort -u)"
           if [ -z "$AUTHORS" ]; then
-            echo "Skipping auto-release. Since last release $LAST_RELEASE_TAG there were no new commits."
+            echo "Skipping auto-release. Since last release $LAST_VERSION_TAG there were no new commits." \
+              | tee -a $GITHUB_STEP_SUMMARY
             echo ""
             echo "release=false" | tee -a $GITHUB_OUTPUT
             exit 0
@@ -44,7 +45,8 @@ jobs:
           declare -r DEPENDABOT="$(echo "$AUTHORS" \
             | grep -E ".*dependabot\[bot\]@users.noreply.github.com$")"
           if [ -z "$DEPENDABOT" ]; then
-            echo "Skipping auto-release. Since last release $LAST_RELEASE_TAG there were no dependabot commits."
+            echo "Skipping auto-release. Since last release $LAST_VERSION_TAG there were no dependabot commits." \
+              | tee -a $GITHUB_STEP_SUMMARY
             echo ""
             echo "Authors:"
             echo "$AUTHORS"
@@ -56,7 +58,8 @@ jobs:
             | grep -Ev ".*coditory\[bot\]@users.noreply.github.com$" \
             | grep -Ev ".*dependabot\[bot\]@users.noreply.github.com$")"
           if [ -n "$NO_BOTS" ]; then
-            echo "Skipping auto-release. Since last release $LAST_RELEASE_TAG there were changes commited by non predefined bots."
+            echo "Skipping auto-release. Since last release $LAST_VERSION_TAG there were changes commited by non predefined bots." \
+              | tee -a $GITHUB_STEP_SUMMARY
             echo ""
             echo "Authors:"
             echo "$AUTHORS"
@@ -64,6 +67,7 @@ jobs:
             echo "release=false" | tee -a $GITHUB_OUTPUT
             exit 0
           fi
-          echo "Triggering release. Since last release $LAST_RELEASE_TAG there were only commits authored by recognized bots."
+          echo "Triggering release. Since last release $LAST_VERSION_TAG there were only commits authored by recognized bots." \
+            | tee -a $GITHUB_STEP_SUMMARY
           echo ""
           echo "release=true" | tee -a $GITHUB_OUTPUT
