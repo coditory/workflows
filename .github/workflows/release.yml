@@ -183,7 +183,7 @@ jobs:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          eval "${{ inputs.snapshot-command }}"
+          ${{ inputs.snapshot-command }}
           echo "### Published snapshot version $NEXT_VERSION 🚀" | tee -a $GITHUB_STEP_SUMMARY
 
       - name: Publish Release
