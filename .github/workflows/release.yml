@@ -174,6 +174,12 @@ jobs:
           && inputs.snapshot-command != ''
         env:
           NEXT_VERSION: ${{ steps.version.outputs.next_version }}
+          GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+          GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          OSSRH_STAGING_PROFILE_ID: ${{ secrets.OSSRH_STAGING_PROFILE_ID }}
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           eval "${{ inputs.snapshot-command }}"
           echo "### Published snapshot version $NEXT_VERSION 🚀" | tee -a $GITHUB_STEP_SUMMARY
@@ -183,6 +189,12 @@ jobs:
         if: inputs.snapshot == false
         env:
           NEXT_VERSION: ${{ steps.version.outputs.next_version }}
+          GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+          GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          OSSRH_STAGING_PROFILE_ID: ${{ secrets.OSSRH_STAGING_PROFILE_ID }}
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           eval "${{ inputs.release-command }}"
           echo "### Published release version $NEXT_VERSION 🚀" | tee -a $GITHUB_STEP_SUMMARY
