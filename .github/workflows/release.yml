@@ -3,27 +3,41 @@ name: Release
 on:
   workflow_call:
     inputs:
+      # branch to run on
       branch:
         type: string
         required: false
         default: 'main'
+      # semver section to increase
       section:
         type: string
         required: false
         default: 'patch'
+      # manually provided version
       version:
         type: string
         required: false
+      # add -SNAPSHOT suffix and, validates manual version
       snapshot:
         type: boolean
         required: false
         default: false
+      # skip check if build succeeded
+      force:
+        type: boolean
+        required: false
+        default: false
+      # should publish package to release repository
       release-command:
         type: string
         required: true
+      # should publish package to snapshot repository
       snapshot-command:
         type: string
         required: false
+      #
+      # Environment dependencies
+      #
       # Java
       java-version:
         description: 'Java version'
@@ -90,6 +104,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate build succeeded
+        if: inputs.force != 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_WORKFLOW: Build
