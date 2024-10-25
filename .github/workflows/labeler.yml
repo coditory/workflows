@@ -1,0 +1,23 @@
+name: "Labeler"
+
+on:
+  workflow_call:
+
+jobs:
+  label-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Setup bot token
+        uses: actions/create-github-app-token@v1
+        id: bot
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
+      - uses: actions/labeler@v5
+        with:
+          repo-token: "${{ secrets.bot.outputs.token }}"
+
