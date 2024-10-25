@@ -160,8 +160,7 @@ jobs:
         env:
           NEXT_VERSION: ${{ steps.version.outputs.next_version }}
         run: |
-          declare -r cmd="$(echo "${{ inputs.snapshot-command }}" | sed -s "s|%NEXT_VERSION%|$NEXT_VERSION|")"
-          $cmd
+          eval "${{ inputs.snapshot-command }}"
           echo "### Published snapshot version $NEXT_VERSION 🚀" | tee -a $GITHUB_STEP_SUMMARY
 
       - name: Publish Release
@@ -170,8 +169,7 @@ jobs:
         env:
           NEXT_VERSION: ${{ steps.version.outputs.next_version }}
         run: |
-          declare -r cmd="$(echo "${{ inputs.release-command }}" | sed -s "s|%NEXT_VERSION%|$NEXT_VERSION|")"
-          $cmd
+          eval "${{ inputs.release-command }}"
           echo "### Published release version $NEXT_VERSION 🚀" | tee -a $GITHUB_STEP_SUMMARY
 
       - name: Revert version commit on failure
