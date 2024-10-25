@@ -104,7 +104,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate build succeeded
-        if: inputs.force != 'false'
+        if: inputs.force != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_WORKFLOW: Build
