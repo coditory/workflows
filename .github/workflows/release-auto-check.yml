@@ -35,39 +35,28 @@ jobs:
           DEPENDABOT_AUTHOR: ""
         run: |
           declare -r AUTHORS="$(git log $LAST_VERSION_TAG..HEAD --no-merges --oneline --format='%ae' 2>/dev/null | sort -u)"
-          if [ -z "$AUTHORS" ]; then
-            echo "Skipping auto release. Since last release $LAST_VERSION_TAG there were no new commits." \
-              | tee -a $GITHUB_STEP_SUMMARY
-            echo ""
-            echo "release=false" | tee -a $GITHUB_OUTPUT
-            exit 0
-          fi
           declare -r DEPENDABOT="$(echo "$AUTHORS" \
             | grep -E ".*dependabot\[bot\]@users.noreply.github.com$")"
-          if [ -z "$DEPENDABOT" ]; then
-            echo "Skipping auto release. Since last release $LAST_VERSION_TAG there were no dependabot commits." \
-              | tee -a $GITHUB_STEP_SUMMARY
-            echo ""
-            echo "Authors:"
-            echo "$AUTHORS"
-            echo ""
-            echo "release=false" | tee -a $GITHUB_OUTPUT
-            exit 0
-          fi
           declare -r NO_BOTS="$(echo "$AUTHORS" \
             | grep -Ev ".*coditory\[bot\]@users.noreply.github.com$" \
             | grep -Ev ".*dependabot\[bot\]@users.noreply.github.com$")"
-          if [ -n "$NO_BOTS" ]; then
-            echo "Skipping auto release. Since last release $LAST_VERSION_TAG there were changes commited not by dependabot or coditory-bot." \
-              | tee -a $GITHUB_STEP_SUMMARY
+          decalre SKIP_CAUSE=""
+          if [ -z "$AUTHORS" ]; then
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no new commits."
+          elif [ -z "$DEPENDABOT" ]; then
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no dependabot commits." \
+          elif [ -n "$NO_BOTS" ]; then
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were changes commited by others." \
+          fi
+          if [ -n "$SKIP_CAUSE" ]; then
+            echo "Skipping auto release: $SKIP_CAUSE" | tee -a $GITHUB_STEP_SUMMARY
             echo ""
-            echo "Authors:"
-            echo "$AUTHORS"
-            echo ""
+            echo "Authors: $(echo "$AUTHORS" | wc -l)"
+            echo
             echo "release=false" | tee -a $GITHUB_OUTPUT
             exit 0
           fi
-          echo "Triggering auto release. Since last release $LAST_VERSION_TAG there were only commits authored by recognized bots." \
+          echo "Triggering auto release. Since last release $LAST_VERSION_TAG there were only commits authored by trusted bots." \
             | tee -a $GITHUB_STEP_SUMMARY
           echo ""
           echo "release=true" | tee -a $GITHUB_OUTPUT
