@@ -174,6 +174,8 @@ jobs:
           && inputs.snapshot-command != ''
         env:
           NEXT_VERSION: ${{ steps.version.outputs.next_version }}
+          SIGNING_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.GPG_PASSPHRASE }}
           GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
           GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
@@ -189,6 +191,8 @@ jobs:
         if: inputs.snapshot == false
         env:
           NEXT_VERSION: ${{ steps.version.outputs.next_version }}
+          SIGNING_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.GPG_PASSPHRASE }}
           GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
           GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
