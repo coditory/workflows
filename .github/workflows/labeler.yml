@@ -19,5 +19,5 @@ jobs:
 
       - uses: actions/labeler@v5
         with:
-          repo-token: "${{ secrets.bot.outputs.token }}"
+          repo-token: "${{ steps.bot.outputs.token }}"
 
