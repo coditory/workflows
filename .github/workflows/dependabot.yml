@@ -34,7 +34,7 @@ jobs:
         id: pr
         if: steps.dependabot-metadata.outputs.update-type != 'version-update:semver-major'
         env:
-          PR_URL: ${{ steps.pr.outputs.url }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ steps.bot.outputs.token }}
         run: gh pr merge --auto --rebase "$PR_URL"
 
