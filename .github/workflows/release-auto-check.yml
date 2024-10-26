@@ -52,13 +52,13 @@ jobs:
           if [ -z "$AUTHORS" ]; then
             SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no new commits."
           elif [ -z "$DEPENDABOT" ]; then
-            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no dependabot commits." \
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no dependabot commits."
           elif [ -n "$NO_BOTS" ]; then
-            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were changes commited by others." \
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were changes commited by others."
           elif [ -z "$IMPORTANT_UPDATES" ]; then
-            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no important changes." \
-          elseif [ "$SECURITY_UPDATES_ONLY" == "true" ] && [ -z "$SEC_UPDATES" ]; then
-            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no security updates." \
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no important changes."
+          elif [ "$SEC_UPDATES_ONLY" == "true" ] && [ -z "$SEC_UPDATES" ]; then
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no security updates."
           fi
           if [ -n "$SKIP_CAUSE" ]; then
             echo "Skipping auto release: $SKIP_CAUSE" | tee -a $GITHUB_STEP_SUMMARY
