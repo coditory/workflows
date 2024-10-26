@@ -31,7 +31,8 @@ jobs:
           private-key: ${{ secrets.REVIEWER_BOT_PRIVATE_KEY }}
 
       - name: Enable PR auto-merge
-        if: steps.pr.conclusion == 'success'
+        id: pr
+        if: steps.dependabot-metadata.outputs.update-type != 'version-update:semver-major'
         env:
           PR_URL: ${{ steps.pr.outputs.url }}
           GITHUB_TOKEN: ${{ steps.bot.outputs.token }}

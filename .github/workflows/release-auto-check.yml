@@ -2,6 +2,12 @@ name: Release Auto
 
 on:
   workflow_call:
+    inputs:
+      security-updates-only:
+        type: boolean
+        description: 'Check only for security updates'
+        required: false
+        default: false
 
 jobs:
   coditory-check:
@@ -32,14 +38,16 @@ jobs:
         id: check
         env:
           LAST_VERSION_TAG: "v${{ steps.version.outputs.version }}"
-          DEPENDABOT_AUTHOR: ""
+          SEC_UPDATES_ONLY: "${{ inputs.security-updates-only }}"
         run: |
           declare -r AUTHORS="$(git log $LAST_VERSION_TAG..HEAD --no-merges --oneline --format='%ae' 2>/dev/null | sort -u)"
-          declare -r DEPENDABOT="$(echo "$AUTHORS" \
-            | grep -E ".*dependabot\[bot\]@users.noreply.github.com$")"
+          declare -r DEPENDABOT="$(echo "$AUTHORS" | grep -E ".*dependabot\[bot\]@users.noreply.github.com$")"
           declare -r NO_BOTS="$(echo "$AUTHORS" \
             | grep -Ev ".*coditory\[bot\]@users.noreply.github.com$" \
             | grep -Ev ".*dependabot\[bot\]@users.noreply.github.com$")"
+          declare -r MESSAGES="$(git log $LAST_VERSION_TAG..HEAD --no-merges --oneline --format='%s' 2>/dev/null | sort -u)"
+          declare -r IMPORTANT_UPDATES="$(echo "$MESSAGES" | grep -E " sec-updates " | grep -E " prod-dependencies " | grep -E " prod-dependencies-major ")"
+          declare -r SEC_UPDATES="$(echo "$MESSAGES" | grep -E " sec-updates ")"
           decalre SKIP_CAUSE=""
           if [ -z "$AUTHORS" ]; then
             SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no new commits."
@@ -47,6 +55,10 @@ jobs:
             SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no dependabot commits." \
           elif [ -n "$NO_BOTS" ]; then
             SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were changes commited by others." \
+          elif [ -z "$IMPORTANT_UPDATES" ]; then
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no important changes." \
+          elseif [ "$SECURITY_UPDATES_ONLY" == "true" ] && [ -z "$SEC_UPDATES" ]; then
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no security updates." \
           fi
           if [ -n "$SKIP_CAUSE" ]; then
             echo "Skipping auto release: $SKIP_CAUSE" | tee -a $GITHUB_STEP_SUMMARY
