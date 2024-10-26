@@ -48,7 +48,7 @@ jobs:
           declare -r MESSAGES="$(git log $LAST_VERSION_TAG..HEAD --no-merges --oneline --format='%s' 2>/dev/null | sort -u)"
           declare -r IMPORTANT_UPDATES="$(echo "$MESSAGES" | grep -E " sec-updates " | grep -E " prod-dependencies " | grep -E " prod-dependencies-major ")"
           declare -r SEC_UPDATES="$(echo "$MESSAGES" | grep -E " sec-updates ")"
-          decalre SKIP_CAUSE=""
+          declare SKIP_CAUSE=""
           if [ -z "$AUTHORS" ]; then
             SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no new commits."
           elif [ -z "$DEPENDABOT" ]; then
