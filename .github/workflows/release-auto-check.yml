@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release: ${{ steps.check.outputs.release }}
+      skip-code: ${{ steps.check.outputs.skip-code }}
     steps:
       - name: Context
         if: inputs.debug
@@ -55,16 +56,22 @@ jobs:
           declare -r IMPORTANT_UPDATES="$(echo "$MESSAGES" | grep -E " sec-updates " | grep -E " prod-dependencies " | grep -E " prod-dependencies-major ")"
           declare -r SEC_UPDATES="$(echo "$MESSAGES" | grep -E " sec-updates ")"
           declare SKIP_CAUSE=""
+          declare SKIP_CODE=""
           if [ -z "$AUTHORS" ]; then
-            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no new commits."
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no new changes."
+            SKIP_CODE="no-changes"
           elif [ -z "$DEPENDABOT" ]; then
-            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no dependabot commits."
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no dependency updates."
+            SKIP_CODE="no-dependency-updates"
           elif [ -n "$NO_BOTS" ]; then
-            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were changes commited by others."
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were changes commited by users (not bots)."
+            SKIP_CODE="user-changes"
           elif [ -z "$IMPORTANT_UPDATES" ]; then
             SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no important changes."
+            SKIP_CODE="no-significant-dependency-updates"
           elif [ "$SEC_UPDATES_ONLY" == "true" ] && [ -z "$SEC_UPDATES" ]; then
             SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no security updates."
+            SKIP_CODE="no-security-updates"
           fi
           if [ -n "$SKIP_CAUSE" ]; then
             echo "Skipping auto release: $SKIP_CAUSE" | tee -a $GITHUB_STEP_SUMMARY
@@ -72,9 +79,11 @@ jobs:
             echo "Authors: $(echo "$AUTHORS" | wc -l)"
             echo
             echo "release=false" | tee -a $GITHUB_OUTPUT
+            echo "skip-code=${SKIP_CODE}" | tee -a $GITHUB_OUTPUT
             exit 0
           fi
           echo "Triggering auto release. Since last release $LAST_VERSION_TAG there were only commits authored by trusted bots." \
             | tee -a $GITHUB_STEP_SUMMARY
           echo ""
           echo "release=true" | tee -a $GITHUB_OUTPUT
+          echo "skip-code=" | tee -a $GITHUB_OUTPUT
