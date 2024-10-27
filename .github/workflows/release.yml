@@ -77,6 +77,8 @@ on:
 jobs:
   coditory-release:
     runs-on: ubuntu-latest
+    # sanity check to release only from owned repository
+    if: github.repository_owner == 'coditory'
     steps:
       - name: Context
         if: inputs.debug
