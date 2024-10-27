@@ -152,7 +152,7 @@ jobs:
         run: |
           declare -r ESC_PREV_VERSION="${PREV_VERSION//./\\.}"
           echo "Changing: $PREV_VERSION -> $NEXT_VERSION"
-          sed -i "s|${ESC_PREV_VERSION}|${NEXT_VERSION}|" README.md 2>/dev/null || true
+          sed -i "s|\"${ESC_PREV_VERSION}\"|\"${NEXT_VERSION}\"|" README.md 2>/dev/null || true
           sed -i "s|^version=${ESC_PREV_VERSION}|version=${NEXT_VERSION}|" gradle.properties 2>/dev/null || true
           sed -i "s|^\( *\)version: *${ESC_PREV_VERSION}|\1version: ${NEXT_VERSION}|" docs/mkdocs.yml 2>/dev/null || true
           if [ "$NEXT_VERSION" == "${NEXT_VERSION%%-SNAPSHOT}" ]; then
