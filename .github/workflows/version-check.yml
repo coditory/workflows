@@ -77,6 +77,7 @@ jobs:
 
       - name: Setup environment
         uses: coditory/multi-setup-action@v1
+        if: steps.skipper.outputs.skip != 'true'
         with:
           java-version: ${{ inputs.java-version }}
           java-distribution: ${{ inputs.java-distribution }}
