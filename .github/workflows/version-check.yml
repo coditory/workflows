@@ -1,0 +1,117 @@
+name: Version check
+
+on:
+  workflow_call:
+    inputs:
+      debug:
+        description: 'Print debug info'
+        type: boolean
+        required: false
+        default: false
+      version-command:
+        description: 'Command that prints out version seen by the build tool'
+        type: 'string'
+        required: false
+        default: './gradlew version --quiet'
+      #
+      # Environment dependencies
+      #
+      # Java
+      java-version:
+        description: 'Java version'
+        type: string
+        required: false
+      java-distribution:
+        description: 'Java distribution'
+        type: string
+        required: false
+        default: 'temurin'
+      # Go
+      go-version:
+        description: 'Go version'
+        type: string
+        required: false
+      # Node
+      node-version:
+        description: 'Go version'
+        type: string
+        required: false
+      # Python
+      python-version:
+        description: 'Python version'
+        type: string
+        required: false
+      # Rust
+      rust-toolchain:
+        description: 'Rust toolchain (e.g. nightly)'
+        type: string
+        required: false
+
+jobs:
+  coditory-version-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Context
+        if: inputs.debug
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        if: steps.skipper.outputs.skip != 'true'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # parsing version from git tags requires full history
+          fetch-depth: 0
+
+      - name: Skip if not needed
+        id: skipper
+        uses: coditory/skip-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          check-prev-workflow-status: ${{ github.event_name == 'push' }}
+          skip-commit-messages: '[ci-skip-build]'
+          files: gradle.properties
+
+      - name: Setup environment
+        uses: coditory/multi-setup-action@v1
+        with:
+          java-version: ${{ inputs.java-version }}
+          java-distribution: ${{ inputs.java-distribution }}
+          go-version: ${{ inputs.go-version }}
+          node-version: ${{ inputs.node-version }}
+          python-version: ${{ inputs.python-version }}
+          rust-toolchain: ${{ inputs.rust-toolchain }}
+
+      - name: Project version
+        id: project
+        if: steps.skipper.outputs.skip != 'true'
+        run: |
+          # Print command before assigning to skip gradle download logs
+          ${{ inputs.version-command }}
+          declare -r version="$(${{ inputs.version-command }})"
+          echo "version=$version" | tee -a $GITHUB_OUTPUT
+
+      - name: Git version
+        id: git
+        if: steps.skipper.outputs.skip != 'true'
+        uses: coditory/version-action@v1
+
+      - name: Compare
+        if: steps.skipper.outputs.skip != 'true'
+        env:
+          PROJECT_VERSION: ${{ steps.project.outputs.version }}
+          GIT_VERSION: ${{ steps.git.outputs.version }}
+        run: |
+          if [ "$PROJECT_VERSION" == "$GIT_VERSION" ]; then
+            echo "Project and git versions matches. All is good!" | tee -a $GITHUB_STEP_SUMMARY
+            echo "Project version: $PROJECT_VERSION" | tee -a $GITHUB_STEP_SUMMARY
+            echo "Git version: $GIT_VERSION" | tee -a $GITHUB_STEP_SUMMARY
+          else
+            echo "Error: Project and git versions do not match." | tee -a $GITHUB_STEP_SUMMARY
+            echo "Project version: $PROJECT_VERSION" | tee -a $GITHUB_STEP_SUMMARY
+            echo "Git version: $GIT_VERSION" | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
