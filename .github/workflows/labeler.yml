@@ -2,6 +2,11 @@ name: "Labeler"
 
 on:
   workflow_call:
+    inputs:
+      debug:
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   label-pr:
@@ -10,6 +15,12 @@ jobs:
       contents: read
       pull-requests: write
     steps:
+      - name: Context
+        if: inputs.debug
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
       - name: Setup bot token
         uses: actions/create-github-app-token@v1
         id: bot

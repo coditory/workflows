@@ -3,6 +3,11 @@ name: "Dependabot"
 on:
   pull_request_target:
   workflow_call:
+    inputs:
+      debug:
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   coditory-dependabot:
@@ -12,10 +17,11 @@ jobs:
       pull-requests: write
       contents: write
     steps:
-      # - name: Dump GitHub context
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GITHUB_CONTEXT"
+      - name: Context
+        if: inputs.debug
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
 
       - name: Dependabot metadata
         id: dependabot-metadata

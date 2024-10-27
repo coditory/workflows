@@ -8,6 +8,11 @@ on:
         description: 'Check only for security updates'
         required: false
         default: false
+      # prints debug details, like GitHub context
+      debug:
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   coditory-check:
@@ -15,10 +20,11 @@ jobs:
     outputs:
       release: ${{ steps.check.outputs.release }}
     steps:
-      # - name: Dump GitHub context
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GITHUB_CONTEXT"
+      - name: Context
+        if: inputs.debug
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
 
       - name: Checkout
         uses: actions/checkout@v4

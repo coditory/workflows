@@ -8,15 +8,20 @@ on:
         type: string
         required: false
         default: "3.x"
+      debug:
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   coditory-docs:
     runs-on: ubuntu-latest
     steps:
-      # - name: Dump GitHub context
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GITHUB_CONTEXT"
+      - name: Context
+        if: inputs.debug
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
 
       - name: Setup bot token
         uses: actions/create-github-app-token@v1

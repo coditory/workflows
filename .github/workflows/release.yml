@@ -35,6 +35,11 @@ on:
       snapshot-command:
         type: string
         required: false
+      # prints debug details, like GitHub context
+      debug:
+        type: boolean
+        required: false
+        default: false
       #
       # Environment dependencies
       #
@@ -73,10 +78,11 @@ jobs:
   coditory-release:
     runs-on: ubuntu-latest
     steps:
-      # - name: Dump GitHub context
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GITHUB_CONTEXT"
+      - name: Context
+        if: inputs.debug
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
 
       - name: Setup bot token
         uses: actions/create-github-app-token@v1
