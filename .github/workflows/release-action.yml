@@ -38,7 +38,7 @@ jobs:
   coditory-release:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
+      - name: Context
         if: inputs.debug
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
