@@ -38,7 +38,7 @@ jobs:
   coditory-release:
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ girhub.repository }}-${{ github.workflow }}
+      group: ${{ github.repository }}-${{ github.workflow }}
     steps:
       - name: Context
         if: inputs.debug

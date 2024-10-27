@@ -80,7 +80,7 @@ jobs:
     # sanity check to release only from owned repository
     if: github.repository_owner == 'coditory'
     concurrency:
-      group: ${{ girhub.repository }}-${{ github.workflow }}
+      group: ${{ github.repository }}-${{ github.workflow }}
     steps:
       - name: Context
         if: inputs.debug
