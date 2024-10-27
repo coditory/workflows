@@ -158,7 +158,7 @@ jobs:
           if [ "$NEXT_VERSION" == "${NEXT_VERSION%%-SNAPSHOT}" ]; then
             if [ -n "$(git status --porcelain)" ]; then
               git add -A
-              git commit -a -m "Update version $PREV_VERSION -> $NEXT_VERSION"
+              git commit -a -m "Update version $PREV_VERSION -> $NEXT_VERSION" -m "[ci-skip-build]"
               git push
               echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
             else
