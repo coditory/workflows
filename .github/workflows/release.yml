@@ -147,31 +147,6 @@ jobs:
           manual-version: ${{ inputs.version }}
           increment-section: ${{ inputs.section }}
 
-      - name: Update version in files
-        id: commit
-        if: inputs.snapshot == false
-        env:
-          PREV_VERSION: ${{ steps.version.outputs.version }}
-          NEXT_VERSION: ${{ steps.version.outputs.next_version }}
-        run: |
-          declare -r ESC_PREV_VERSION="${PREV_VERSION//./\\.}"
-          echo "Changing: $PREV_VERSION -> $NEXT_VERSION"
-          sed -i "s|\"${ESC_PREV_VERSION}\"|\"${NEXT_VERSION}\"|" README.md 2>/dev/null || true
-          sed -i "s|^version=${ESC_PREV_VERSION}|version=${NEXT_VERSION}|" gradle.properties 2>/dev/null || true
-          sed -i "s|^\( *\)version: *${ESC_PREV_VERSION}|\1version: ${NEXT_VERSION}|" docs/mkdocs.yml 2>/dev/null || true
-          if [ "$NEXT_VERSION" == "${NEXT_VERSION%%-SNAPSHOT}" ]; then
-            if [ -n "$(git status --porcelain)" ]; then
-              git add -A
-              git commit -a -m "Update version $PREV_VERSION -> $NEXT_VERSION" -m "[ci-skip-build]"
-              git push
-              echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-            else
-              echo "Nothing changed. Skipping commit."
-            fi
-          else
-            echo "Skipping committing updated version in config files for SNAPSHOT version."
-          fi
-
       - name: Setup environment
         uses: coditory/multi-setup-action@v1
         with:
@@ -196,6 +171,31 @@ jobs:
             echo "Project version: $version" | tee -a $GITHUB_STEP_SUMMARY
             echo "Git version: $TAG_VERSION" | tee -a $GITHUB_STEP_SUMMARY
             exit 1
+          fi
+
+      - name: Update version in files
+        id: commit
+        if: inputs.snapshot == false
+        env:
+          PREV_VERSION: ${{ steps.version.outputs.version }}
+          NEXT_VERSION: ${{ steps.version.outputs.next_version }}
+        run: |
+          declare -r ESC_PREV_VERSION="${PREV_VERSION//./\\.}"
+          echo "Changing: $PREV_VERSION -> $NEXT_VERSION"
+          sed -i "s|\"${ESC_PREV_VERSION}\"|\"${NEXT_VERSION}\"|" README.md 2>/dev/null || true
+          sed -i "s|^version=${ESC_PREV_VERSION}|version=${NEXT_VERSION}|" gradle.properties 2>/dev/null || true
+          sed -i "s|^\( *\)version: *${ESC_PREV_VERSION}|\1version: ${NEXT_VERSION}|" docs/mkdocs.yml 2>/dev/null || true
+          if [ "$NEXT_VERSION" == "${NEXT_VERSION%%-SNAPSHOT}" ]; then
+            if [ -n "$(git status --porcelain)" ]; then
+              git add -A
+              git commit -a -m "Update version $PREV_VERSION -> $NEXT_VERSION" -m "[ci-skip-build]"
+              git push
+              echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+            else
+              echo "Nothing changed. Skipping commit."
+            fi
+          else
+            echo "Skipping committing updated version in config files for SNAPSHOT version."
           fi
 
       - name: Publish Snapshot
