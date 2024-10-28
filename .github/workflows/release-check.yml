@@ -1,4 +1,4 @@
-name: Release Auto
+name: Auto Release Check
 
 on:
   workflow_call:
@@ -15,7 +15,7 @@ on:
         default: false
 
 jobs:
-  coditory-check:
+  coditory-release-check:
     runs-on: ubuntu-latest
     outputs:
       release: ${{ steps.check.outputs.release }}
@@ -52,9 +52,19 @@ jobs:
           declare -r NO_BOTS="$(echo "$AUTHORS" \
             | grep -Ev ".*coditory\[bot\]@users.noreply.github.com$" \
             | grep -Ev ".*dependabot\[bot\]@users.noreply.github.com$")"
-          declare -r MESSAGES="$(git log $LAST_VERSION_TAG..HEAD --no-merges --oneline --format='%s' 2>/dev/null | sort -u)"
+          declare -r MESSAGES="$(git log $LAST_VERSION_TAG..HEAD --no-merges --oneline --format='%s%n%b' 2>/dev/null | sort -u)"
           declare -r IMPORTANT_UPDATES="$(echo "$MESSAGES" | grep -E " sec-updates " | grep -E " prod-dependencies " | grep -E " prod-dependencies-major ")"
           declare -r SEC_UPDATES="$(echo "$MESSAGES" | grep -E " sec-updates ")"
+          declare COMMIT_CMD=""
+          while IFS= read -r line; do
+            if [ "$line" =~ "[ci-auto-release-unblock]" ]; then
+              COMMIT_CMD="unblock"
+              break;
+            elif [ "$line" =~ "[ci-auto-release-block]" ]; then
+              COMMIT_CMD="block"
+              break;
+            fi
+          done <<< "$MESSAGES"
           declare SKIP_CAUSE=""
           declare SKIP_CODE=""
           if [ -z "$AUTHORS" ]; then
@@ -63,7 +73,7 @@ jobs:
           elif [ -z "$DEPENDABOT" ]; then
             SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no dependency updates."
             SKIP_CODE="no-dependency-updates"
-          elif [ -n "$NO_BOTS" ]; then
+          elif [ -n "$NO_BOTS" ] && [ "$COMMIT_CMD" != "unblock" ]; then
             SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were changes commited by users (not bots)."
             SKIP_CODE="user-changes"
           elif [ -z "$IMPORTANT_UPDATES" ]; then
@@ -72,6 +82,10 @@ jobs:
           elif [ "$SEC_UPDATES_ONLY" == "true" ] && [ -z "$SEC_UPDATES" ]; then
             SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no security updates."
             SKIP_CODE="no-security-updates"
+          elif [ "$COMMIT_CMD" == "block" ]; then
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there was a commit with '[ci-auto-release-block]' that blocks auto releases. "
+            SKIP_CAUSE+="To unblock auto-releases, perform manual release od push a commit with '[ci-autorelease-unblock]' in message."
+            SKIP_CODE="commit-block-cmd"
           fi
           if [ -n "$SKIP_CAUSE" ]; then
             echo "Skipping auto release: $SKIP_CAUSE" | tee -a $GITHUB_STEP_SUMMARY
