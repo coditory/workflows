@@ -35,6 +35,10 @@ on:
       snapshot-command:
         type: string
         required: false
+      # when defined checks if latest tag version matches project version
+      version-command:
+        type: string
+        required: false
       # prints debug details, like GitHub context
       debug:
         type: boolean
@@ -177,6 +181,22 @@ jobs:
           node-version: ${{ inputs.node-version }}
           python-version: ${{ inputs.python-version }}
           rust-toolchain: ${{ inputs.rust-toolchain }}
+
+      - name: Compare latest tag version and project version
+        if: inputs.version-command != ''
+        env:
+          VERSION_CMD: ${{ inputs.version-command }}
+          TAG_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Print command before assigning to skip gradle download logs
+          $VERSION_CMD
+          declare -r version="$($VERSION_CMD)"
+          if [ "$version" != "$TAG_VERSION" ]; then
+            echo "Error: Project version and latest tag versions do not match." | tee -a $GITHUB_STEP_SUMMARY
+            echo "Project version: $version" | tee -a $GITHUB_STEP_SUMMARY
+            echo "Git version: $TAG_VERSION" | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
 
       - name: Publish Snapshot
         if: |
