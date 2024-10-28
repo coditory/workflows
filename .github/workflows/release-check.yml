@@ -57,10 +57,10 @@ jobs:
           declare -r SEC_UPDATES="$(echo "$MESSAGES" | grep -E " sec-updates ")"
           declare COMMIT_CMD=""
           while IFS= read -r line; do
-            if [ "$line" =~ "[ci-auto-release-unblock]" ]; then
+            if [ "$line" =~ "[ci-release-auto-unblock]" ]; then
               COMMIT_CMD="unblock"
               break;
-            elif [ "$line" =~ "[ci-auto-release-block]" ]; then
+            elif [ "$line" =~ "[ci-release-auto-block]" ]; then
               COMMIT_CMD="block"
               break;
             fi
@@ -83,8 +83,8 @@ jobs:
             SKIP_CAUSE="Since last release $LAST_VERSION_TAG there were no security updates."
             SKIP_CODE="no-security-updates"
           elif [ "$COMMIT_CMD" == "block" ]; then
-            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there was a commit with '[ci-auto-release-block]' that blocks auto releases. "
-            SKIP_CAUSE+="To unblock auto-releases, perform manual release od push a commit with '[ci-autorelease-unblock]' in message."
+            SKIP_CAUSE="Since last release $LAST_VERSION_TAG there was a commit with '[ci-release-auto-block]' that blocks auto releases. "
+            SKIP_CAUSE+="To unblock auto-releases, perform manual release od push a commit with '[ci-release-auto-unblock]' in message."
             SKIP_CODE="commit-block-cmd"
           fi
           if [ -n "$SKIP_CAUSE" ]; then
