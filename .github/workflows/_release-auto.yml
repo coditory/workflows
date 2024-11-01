@@ -3,8 +3,8 @@ name: Self Auto Release
 on:
   workflow_dispatch:
   schedule:
-    # at 5:30 UTC every other month
-    - cron: "30 5 1 */2 *"
+    # at 5:30 UTC every month
+    - cron: "30 5 1 * *"
 
 jobs:
   check:
