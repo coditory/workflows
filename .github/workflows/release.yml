@@ -185,6 +185,7 @@ jobs:
           sed -i "s|\"${ESC_PREV_VERSION}\"|\"${NEXT_VERSION}\"|" README.md 2>/dev/null || true
           sed -i "s|^version=${ESC_PREV_VERSION}|version=${NEXT_VERSION}|" gradle.properties 2>/dev/null || true
           sed -i "s|^\( *\)version: *${ESC_PREV_VERSION}|\1version: ${NEXT_VERSION}|" docs/mkdocs.yml 2>/dev/null || true
+          sed -i "s|^\( *\)version: *'${ESC_PREV_VERSION}'|\1version: '${NEXT_VERSION}'|" docs/mkdocs.yml 2>/dev/null || true
           if [ "$NEXT_VERSION" == "${NEXT_VERSION%%-SNAPSHOT}" ]; then
             if [ -n "$(git status --porcelain)" ]; then
               git add -A
