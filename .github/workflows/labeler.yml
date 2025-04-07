@@ -22,7 +22,7 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Setup bot token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         id: bot
         with:
           app-id: ${{ secrets.BOT_APP_ID }}

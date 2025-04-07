@@ -30,7 +30,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup reviewer bot token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         id: bot
         with:
           app-id: ${{ secrets.REVIEWER_BOT_APP_ID }}
