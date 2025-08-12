@@ -28,7 +28,7 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # Required to deduce version from git tags
           fetch-depth: 0
