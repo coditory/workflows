@@ -65,7 +65,7 @@ jobs:
           git config --global user.email "$USER_EMAIL"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: "refs/heads/${{ inputs.branch }}"
           token: ${{ steps.bot.outputs.token }}
